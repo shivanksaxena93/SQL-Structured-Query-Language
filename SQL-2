@@ -1,0 +1,242 @@
+CREATE TABLE items(
+id INT NOT NULL PRIMARY KEY, 
+name varchar(100),
+cost INT,
+seller_id INT,
+bids int);
+
+INSERT INTO items values (1, 'Brand New Mac Computer', 149.99, 32, 3);
+INSERT INTO items values (2, 'Used diaper from my sister', 2.04, 1, 0);
+INSERT INTO items values (3, 'Fresh apple pie', 14.99, 54, 32);
+INSERT INTO items values (4, 'New gym socks', 2.34, 90, 566);
+INSERT INTO items values (5, 'Weedwacker only slightly used', 4.56, 84, 2);
+INSERT INTO items values (6, 'New ipad stolen from best buy', 399, 32, 23);
+INSERT INTO items values (7, 'Book about having babies', 21.34, 44,21);
+INSERT INTO items values (8, 'Woman jeans', 49.5, 56, 23);
+INSERT INTO items values (9, 'Traditional carpet', 25.45, 14, 75);
+INSERT INTO items values (10, '3 Boxes of frogs', 30.49, 68, 145);
+INSERT INTO items values (11, '48 Boxes of frogs', 74.29, 6, 95);
+INSERT INTO items values (12, '7 boxes of frogs', 857.75, 18, 88);
+INSERT INTO items values (13, 'laptop', 743.3, 89, 158);
+INSERT INTO items values (14, 'thumbeline', 228.05, 15, 49);
+INSERT INTO items values (15, 'bed', 127.15, 65,189);
+INSERT INTO items values (16, 'shampoing', 12.8, 6, 105);
+INSERT INTO items values (17, 'stove', 37.66, 68, 111);
+INSERT INTO items values (18, 'cushion', 7.15, 97, 157);
+INSERT INTO items values (19, 'refrigerator', 657.47, 61, 129);
+INSERT INTO items values (20, 'gold necklace', 853.07, 10, 101);
+INSERT INTO items values (21, 'pan', 33.7, 7, 184);
+INSERT INTO items values (22, 'awesome alien computer game', 10.75, 18, 29);
+INSERT INTO items values (23, 'baby coat', 89.99, 14, 47);
+ select * from items;
+
+TRUNCATE table items;
+# Deleting the data of a table without dropping the table
+
+SELECT name FROM items WHERE name LIKE 'new%';
+SELECT name FROM items WHERE name LIKE '%computer%'; 
+SELECT city FROM customers WHERE city LIKE 'h%d';
+SELECT name from items WHERE name LIKE '_ boxes of frogs'; 
+# Using wildcards such as % and _ with LIKE for sorting functions within the table where % means anything starting with the name
+# _ means the only a single character
+
+# Using Regular Expressions REGEXP
+SELECT name FROM items WHERE name REGEXP 'new';
+# Normal Regular Exp , it doesnt matter where the word appears, itmes related to that word will be displayed
+
+SELECT name FROM items WHERE name REGEXP '. boxes';
+# . Expression based on period # Anything which came with boxes 
+
+SELECT name FROM items WHERE name REGEXP 'gold | car';
+# | symbol Expression works as OR, search for any item which include Gold OR Car
+
+SELECT name FROM items WHERE name REGEXP '[12345]';
+SELECT name FROM items WHERE name REGEXP '[1-5]';
+# Set Expression []; It runs multiple OR statements together combining all the condition together in the brackets
+
+SELECT name FROM items WHERE name REGEXP '[^123456]';
+SELECT name FROM items WHERE name REGEXP '[^1-6]';
+# ^ this symbol helps in negating the set or other expressions 
+
+# Creating CUSTOM column using Concatinate Command
+SELECT CONCAT (city,', ',state) from customers ;
+# The space with '' is given in order to provide space and collan, so that computer treats it as a variable
+
+SELECT CONCAT (city,', ',state) As new_address from customers;
+#To give the custom column a name add AS followed by the name
+
+#To use mathematical expressions 
+SELECT name,cost, (1- 30/100)*cost AS discounted_price from items;
+SELECT name,cost, 0.7*cost AS discounted_price from items;
+# Suppose we have a dicount on products of $1, so the new cost would be calculate in the above fashion
+
+# Different types of functions
+# Upper() - It only takes the name of the column and provides with the name in CAPITAL LETTERS.alter
+SELECT name, UPPER(name) as NAMES_IN_CAPITAL FROM customers;
+
+# These 2 functions are string functions which can be applicied only to characters and text.
+
+# Numeric Functions
+SELECT cost, SQRT(cost) as SQUARED_COST FROM items;
+
+# Aggregrate Functiom() Average
+SELECT AVG(COST) AS AVERAGE_COST from items; 	
+
+# Summation or Addition 
+SELECT SUM(bids) AS TOTAL_BIDS from items;
+
+#Professional use of the functions such as cumalating the cost anc calculating the average from a single seller
+SELECT COUNT(bids) AS TOTAL_BID FROM items WHERE seller_id = 7;
+# Using COUNT() TO count the total items
+SELECT AVG(cost) as AVERAGE_COST_OF_A_SELLER FROM items WHERE seller_id = 7;
+
+#How to run several aggregrate functions at once for getting the listing of each seller
+SELECT COUNT(*) AS TOTAL,
+MAX(cost) AS MAX_COST,
+AVG(COST) AS AVG_OF_ITEMS
+FROM items WHERE seller_id = 6;
+
+#Using GROUPBY FUNCTION to avoid multiple where clause and collabrately calculate the values
+SELECT seller_id, COUNT(*) as TOTAL_ITEMS_OF_A_SELLER FROM items GROUP BY seller_id;
+#Filtering the items from above custom column using a clause called HAVING
+SELECT seller_id, COUNT(*) as TOTAL_ITEMS_OF_A_SELLER FROM items GROUP BY seller_id HAVING COUNT(*) > 1;
+# A HAVING clause is similiar to the WHERE clause used to filter the results
+#For Groups HAVING is used and for each rows where clause is used 
+
+SELECT seller_id, COUNT(*) as TOTAL_ITEMS_OF_A_SELLER FROM items GROUP BY seller_id HAVING COUNT(*) > 1 ORDER BY TOTAL_ITEMS_OF_A_SELLER DESC;
+# using GROUP BY command in descending order
+
+#SUB QUERIES (query inside a query)
+# WE need the names and cost of items which are greater than the average of the cost of all items
+#Either it can be done
+#SELECT AVG(cost) FROM items;
+#SELECT name, cost FROM items WHERE cost > VALUE ORDER BY cost DESC; 
+# OR
+SELECT name, cost FROM items WHERE cost > (SELECT AVG(cost) FROM items) ORDER BY cost DESC;
+
+#query involving the list 
+# For determining the the seller who carries the cheapest frog
+SELECT seller_id, MIN(COST) FROM items WHERE name REGEXP 'boxes of frogs';
+
+#OR can be done like WHEN MENTIONED THAT THE SELLER MUST BE FROM SPECIFIC LIST
+#SELECT seller_id FROM items WHERE name Like '% boxes of frogs';
+SELECT seller_id, MIN(cost) FROM items WHERE name like '% boxes of frogs' AND seller_id IN (SELECT seller_id FROM items WHERE name Like '% boxes of frogs'); 
+
+#Joins
+#Joining two tables depeding upon a WHERE clause and creating a new custom table
+SELECT customers.id, customers.name, items.id,items.cost FROM customers, items
+WHERE customers.id = seller_id
+ORDER BY customers.id ASC;  
+
+#Giving Tables the nickname and joining -- Simple Join
+SELECT c.id, c.name, i.id, i.cost
+FROM customers AS C, items AS i
+WHERE c.id = i.seller_id;
+
+# Outer joins (LEFT/Right/Full)
+# This outer join retreives all the entries of either left or right table even if they are not common
+SELECT customers.name, items.name FROM customers lEFT OUTER JOIN items ON customers.id=items.seller_id;
+# HERE ON works in same way as of WHERE Clause # All customer names will appear even if they don't have any item to sell
+#LEFT and RIGHT depends on which complete table to be chosen
+
+#Inner Joins/ Self join
+SELECT customers.name,items.name from customers INNER JOIN items ON customers.id=items.seller_id;
+#Self Join
+SELECT A.name AS name_1, B.name AS name_2, A.city From customers A, customers B
+WHERE A.id <> B.id AND A.city = B.city ORDER by A.city;
+
+# Unions - simply combine two or more queries in a table #The columns selected must be same so they can unite easily
+# It also removes duplicates automaticaly if UNION ALL is used, Duplicate entries are included
+SELECT name, cost, bids FROM items WHERE bids > 2 
+UNION
+SELECT name, cost, bids FROM items WHERE cost > 20;
+
+
+# Designing a search engine in SQL
+ALTER TABLE items ADD FULLTEXT(name);
+# 1. Giving search rights to the columns 
+ SELECT name, cost FROM items WHERE MATCH(name) AGAINST('baby');
+# 2. defining the search 
+# This search is occured on rank basis which matches to the search words and outputs are displayed and are very much faster than LIKE clauses
+
+ SELECT name, cost FROM items WHERE MATCH(name) AGAINST('+new -gym' IN BOOLEAN MODE);
+# Customizing the search expression where search could actually be more worthy by adding IN BOOLEAN MODE
+# + SIGN means this word must be included whereas - SIGN means this sign must NOT be included
+
+# Editing the databse AND ADDING NEW ENTRY IN THE TABLE
+INSERT INTO items VALUES ('101','bacon and strips','9.99','1','0');
+
+#If the Table structure has been altered using this method won't cause any problem
+INSERT INTO items(id, name, cost,seller_id,bids) VALUES ('102','fish and chips','7.99','1','0');
+INSERT INTO items(name,id,seller_id) VALUES('icelolly','103','5');
+
+#Adding Multiple rows simultaneously
+INSERT INTO items(id, name,cost, seller_id,bids ) VALUES
+('104','dounts','4.99','2','2'),
+('105','shampoo','19.99','6','1'),
+('106','new skates','25.99','9','0');
+
+#Merging 2 tables together and adding data to one using INSERT AND SELECT statements together using a WHERE Clause
+INSERT INTO items(id,name,cost, seller_id,bids)SELECT id,name,cost,seller_id,bids FROM faketable;
+
+# Editing a row using UPDATE
+UPDATE items SET name = 'new shoes' WHERE id = 106;
+#Editing Multiple Columns together
+UPDATE items SET name = 'frog cake', bids = 6 WHERE id = 106;
+
+#DELETING rows
+DELETE FROM items WHERE id= 106;
+
+#AUTO INCREMENTING UNIQUE
+
+CREATE TABLE users(
+id int NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY);
+
+# Adding an addition column
+ALTER TABLE users ADD users_address varchar(20);
+
+# Delete a column
+ALTER TABLE users DROP COLUMN users_address;
+
+# Renaming the table
+RENAME TABLE customers TO users;
+
+# Views
+# They are the temporary tables which does not hold the data in actual scenario for viewing in the other table	
+SELECT name,id,cost, bids FROM items ORDER BY bids DESC LIMIT 10; 
+# This can be made itno a view (virtually dynamic with auto update)
+CREATE VIEW mostbids AS
+SELECT name,id,cost, bids FROM items ORDER BY bids DESC LIMIT 10;
+
+Select * from mostbids;
+
+Select seller_id, name from items group by seller_id having bids = max(bids);
+Select id, name,seller_id from items group by seller_id having max(bids);
+
+select * from items;
+select * from customers;
+select items.name, items.seller_id from items left outer join customers on items.seller_id=customers.id where customers.id is null;
+
+
+Select * from customers where zip >= '45002' ;
+
+Declare
+bonus number(8,2)
+emp_id number(6) = 200;
+
+Begin
+dbms_output.put_line('hello world')
+end;
+
+Select * from items;
+select name, cost from items order by cost desc limit 1, 1;
+
+
+Select id, name, row_number() over (order by cost) from items;
+# desne row_number function arrages the number based on the order by condition denifing the index row number to each of them
+
+Select id, name, dense_rank() over (order by cost) from items;
+# desne rank function allots the same rank to the attributes sharing same conditional value followed by incrementing single value without skipping the number 
+
+Select id, name, rank() over (order by cost) from items;
+# desne rank function allots the same rank to the attributes sharing same conditional value but skips the incremental value and assings the skipped value to the next preceding number
