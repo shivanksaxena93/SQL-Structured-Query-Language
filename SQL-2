@@ -123,6 +123,7 @@ SELECT seller_id, MIN(COST) FROM items WHERE name REGEXP 'boxes of frogs';
 SELECT seller_id, MIN(cost) FROM items WHERE name like '% boxes of frogs' AND seller_id IN (SELECT seller_id FROM items WHERE name Like '% boxes of frogs'); 
 
 #Joins
+Using Join is equivalent to inner join
 #Joining two tables depeding upon a WHERE clause and creating a new custom table
 SELECT customers.id, customers.name, items.id,items.cost FROM customers, items
 WHERE customers.id = seller_id
